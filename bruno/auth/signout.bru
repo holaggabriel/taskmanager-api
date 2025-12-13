@@ -1,0 +1,24 @@
+meta {
+  name: signout
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/auth/signout
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "identifier": "johndoe",
+    "password": "pass"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

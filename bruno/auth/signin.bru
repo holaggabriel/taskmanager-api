@@ -1,0 +1,24 @@
+meta {
+  name: signin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/auth/signin
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "identifier": "user1",
+    "password": "user1"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

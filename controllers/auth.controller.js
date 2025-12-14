@@ -6,11 +6,6 @@ async function signup(req, res) {
   try {
     const { username, name, email, password } = req.body;
 
-    const existingUser = await User.findByIdentifier(email) || await User.findByIdentifier(username);
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Username or email already exists' });
-    }
-
     const user = await User.createUser({ username, name, email, password });
 
     res.status(201).json({

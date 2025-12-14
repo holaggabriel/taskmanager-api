@@ -4,10 +4,22 @@ const authenticateToken = require('./middleware/authToken');
 const taskRoutes = require('./routes/task.routes');
 const authRoutes = require('./routes/auth.routes');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+// Permitir cualquier origen y enviar cookies
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // permitir cualquier origen
+      callback(null, true);
+    },
+    credentials: true, // permite enviar cookies
+  })
+);
 
 app.use('/auth', authRoutes);
 app.use('/tasks', taskRoutes);

@@ -42,9 +42,15 @@ module.exports = (sequelize, DataTypes) => {
   // ----------------------------
   // Búsqueda por email o username
   // ----------------------------
-  User.findByIdentifier = async function(identifier) {
+  User.findByEmail = async function(email) {
     return this.findOne({
-      where: { [Op.or]: [{ email: identifier }, { username: identifier }] }
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), email.toLowerCase())
+    });
+  };
+
+  User.findByUsername = async function(username) {
+    return this.findOne({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('username')), username.toLowerCase())
     });
   };
 

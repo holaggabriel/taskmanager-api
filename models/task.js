@@ -84,9 +84,22 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   // Actualizar tarea
-  Task.updateTaskById = async function(id, fields) {
-    const task = await this.findByPk(id);
-    if (!task) return null;
+  Task.updateTaskForUser = async function(taskId, userId, fields) {
+    // Buscar la tarea asociada al usuario
+    const task = await this.findOne({
+      where: { id: taskId },
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId },
+          attributes: [], // no necesitamos datos del usuario
+        }
+      ]
+    });
+
+    if (!task) return null; // tarea no existe o usuario no asociado
+
     await task.update(fields);
     return task;
   };

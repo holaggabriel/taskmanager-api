@@ -50,7 +50,9 @@ async function get(req, res) {
 
 async function update(req, res) {
   try {
-    const task = await Task.updateTaskById(req.params.id, req.body);
+    const userId = req.user.id;
+    const task = await Task.updateTaskForUser(req.params.id, userId, req.body);
+
     if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
     res.json({ success: true, message: 'Task updated successfully' });

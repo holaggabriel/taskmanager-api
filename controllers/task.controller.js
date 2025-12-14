@@ -21,11 +21,13 @@ async function create(req, res) {
 
 async function list(req, res) {
   try {
-    const tasks = await Task.getAllTasks();
+    const userId = req.user.id;
+    const tasks = await Task.getAllTasksForUser(userId);
+
     res.json({
       success: true,
       message: 'Tasks retrieved successfully',
-      data: tasks
+      data: {tasks: tasks}
     });
   } catch (err) {
     console.error(err);

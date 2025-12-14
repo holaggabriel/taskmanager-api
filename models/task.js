@@ -47,6 +47,21 @@ module.exports = (sequelize, DataTypes) => {
     return this.findAll({ order: [['created_at', 'DESC']] });
   };
 
+  // Obtener todas las tareas de un usuario específico
+  Task.getAllTasksForUser = async function(userId) {
+    return this.findAll({
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId }, // solo tareas asociadas a este usuario
+          attributes: [] // opcional: no devolver datos del usuario
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+  };
+
   // Obtener tarea por ID
   Task.getTaskById = async function(id) {
     return this.findByPk(id);

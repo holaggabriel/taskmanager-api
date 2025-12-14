@@ -3,6 +3,7 @@ require('dotenv').config();
 const authenticateToken = require('./middleware/authToken');
 const taskRoutes = require('./routes/task.routes');
 const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes'); 
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -22,6 +23,7 @@ app.use(
 );
 
 app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 app.use('/tasks', taskRoutes);
 
 app.get('/', authenticateToken, (req, res) => {

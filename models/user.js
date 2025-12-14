@@ -71,6 +71,13 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  User.findById = async function(id) {
+    return this.findOne({
+      where: { id },
+      attributes: ['username', 'name', 'email'],
+    });
+  };
+
   // ----------------------------
   // Crear usuario con hash de contraseña
   // ----------------------------

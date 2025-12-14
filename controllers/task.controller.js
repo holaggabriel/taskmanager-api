@@ -91,6 +91,26 @@ async function softDelete(req, res) {
   }
 }
 
+async function softDeleteAll(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const deletedCount = await Task.softDeleteAllTasksForUser(userId);
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'No tasks found to soft delete' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Soft deleted ${deletedCount} task(s)` 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
 async function hardDelete(req, res) {
   try {
     const userId = req.user.id;
@@ -99,6 +119,27 @@ async function hardDelete(req, res) {
     if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
     res.json({ success: true, message: 'Task permanently deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
+async function hardDeleteAll(req, res) {
+  try {
+    const userId = req.user.id;
+
+    // Llamamos al método que elimina todas las tareas del usuario
+    const deletedCount = await Task.hardDeleteAllTasksForUser(userId);
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'No tasks found to delete' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Permanently deleted ${deletedCount} task(s)` 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -119,4 +160,24 @@ async function restore(req, res) {
   }
 }
 
-module.exports = { create, list, listDeleted, get, update, softDelete, hardDelete, restore };
+async function restoreAll(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const restoredCount = await Task.restoreAllTasksForUser(userId);
+
+    if (restoredCount === 0) {
+      return res.status(404).json({ success: false, message: 'No deleted tasks found to restore' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Restored ${restoredCount} task(s)` 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
+module.exports = { create, list, listDeleted, get, update, softDelete, hardDelete, restore, hardDeleteAll, restoreAll, softDeleteAll};

@@ -1,11 +1,11 @@
 meta {
-  name: Lista de tareas eliminadas
+  name: Restaurar todo
   type: http
-  seq: 5
+  seq: 11
 }
 
-get {
-  url: {{host}}/tasks/deleted
+patch {
+  url: {{host}}/tasks/restore
   body: none
   auth: inherit
 }

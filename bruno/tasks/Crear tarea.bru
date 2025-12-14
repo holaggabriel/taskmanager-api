@@ -1,0 +1,24 @@
+meta {
+  name: Crear tarea
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/tasks
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Finish project",
+    "description": "Complete the task manager API by the end of the week",
+    "status": "pending"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

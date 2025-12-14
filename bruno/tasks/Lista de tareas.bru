@@ -1,0 +1,16 @@
+meta {
+  name: Lista de tareas
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/tasks
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

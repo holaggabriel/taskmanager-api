@@ -1,4 +1,5 @@
 'use strict';
+const { Op } = require('../utils/sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Task = sequelize.define(
@@ -29,23 +30,15 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: 'tasks',
       underscored: true,
-      timestamps: true
+      timestamps: true,
+      paranoid: true,
+      deletedAt: 'deleted_at'
     }
   );
 
   // ----------------------------
   // Métodos estáticos para la lógica de negocio
   // ----------------------------
-
-  // Crear tarea
-  Task.createTask = async function({ title, description, status }) {
-    return this.create({ title, description, status });
-  };
-
-  // Obtener todas las tareas
-  Task.getAllTasks = async function() {
-    return this.findAll({ order: [['created_at', 'DESC']] });
-  };
 
   // Obtener todas las tareas de un usuario específico
   Task.getAllTasksForUser = async function(userId) {
@@ -58,13 +51,28 @@ module.exports = (sequelize, DataTypes) => {
           attributes: [] // opcional: no devolver datos del usuario
         }
       ],
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
+      paranoid: true
     });
   };
 
-  // Obtener tarea por ID
-  Task.getTaskById = async function(id) {
-    return this.findByPk(id);
+  // Obtener todas las tareas eliminadas de un usuario específico
+  Task.getDeletedTasksForUser = async function(userId) {
+    return this.findAll({
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId },
+          attributes: [] // no devolver datos del usuario
+        }
+      ],
+      where: {
+        deleted_at: { [Op.ne]: null } // solo tareas con deleted_at != null
+      },
+      paranoid: false, // necesario para incluir tareas soft deleted
+      order: [['deleted_at', 'DESC']]
+    });
   };
 
   Task.getTaskByIdForUser = async function(taskId, userId) {
@@ -94,6 +102,7 @@ module.exports = (sequelize, DataTypes) => {
           as: 'users',
           where: { id: userId },
           attributes: [], // no necesitamos datos del usuario
+          paranoid: true // excluye tareas soft deleted automáticamente
         }
       ]
     });
@@ -104,11 +113,68 @@ module.exports = (sequelize, DataTypes) => {
     return task;
   };
 
-  // Eliminar tarea
-  Task.deleteTaskById = async function(id) {
-    const task = await this.findByPk(id);
-    if (!task) return null;
-    await task.destroy();
+  // Soft delete: solo el owner puede eliminar la tarea
+  Task.softDeleteTaskForUser = async function(taskId, userId) {
+    const task = await this.findOne({
+      where: { id: taskId },
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId },
+          through: { where: { role: 'owner' } }, // verificar que sea owner
+          attributes: []
+        }
+      ]
+    });
+
+    if (!task) return null; // tarea no existe o usuario no es owner
+
+    await task.destroy(); // soft delete
+    return task;
+  };
+
+  // Restore: solo el owner puede restaurar la tarea
+  Task.restoreTaskForUser = async function(taskId, userId) {
+    const task = await this.findOne({
+      where: { id: taskId },
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId },
+          through: { where: { role: 'owner' } }, // solo owner
+          attributes: []
+        }
+      ],
+      paranoid: false // incluir tareas soft deleted
+    });
+
+    if (!task || !task.deleted_at) return null; // no existe o no está eliminada
+
+    await task.restore(); // restaurar soft delete
+    return task;
+  };
+
+  // Hard delete: solo el owner puede eliminar permanentemente
+  Task.hardDeleteTaskForUser = async function(taskId, userId) {
+    const task = await this.findOne({
+      where: { id: taskId },
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId },
+          through: { where: { role: 'owner' } }, // solo owner
+          attributes: []
+        }
+      ],
+      paranoid: false // incluir tareas soft deleted
+    });
+
+    if (!task) return null; // tarea no existe o usuario no es owner
+
+    await task.destroy({ force: true }); // eliminar permanentemente
     return task;
   };
 

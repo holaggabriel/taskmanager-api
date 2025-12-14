@@ -11,8 +11,11 @@ router.use(validateUserId);
 
 router.post('/', validateTask, taskController.create);
 router.get('/', taskController.list);
+router.get('/deleted', taskController.listDeleted);
 router.get('/:id', taskController.get);
 router.put('/:id', validateTaskUpdate, taskController.update);
-router.delete('/:id', taskController.remove);
+router.delete('/:id', taskController.softDelete);
+router.delete('/hard/:id', taskController.hardDelete);
+router.patch('/restore/:id', taskController.restore);
 
 module.exports = router;

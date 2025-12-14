@@ -35,6 +35,22 @@ async function list(req, res) {
   }
 }
 
+async function listDeleted(req, res) {
+  try {
+    const userId = req.user.id;
+    const tasks = await Task.getDeletedTasksForUser(userId);
+
+    res.json({
+      success: true,
+      message: 'Deleted tasks retrieved successfully',
+      data: { tasks }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
 async function get(req, res) {
   try {
     const userId = req.user.id;
@@ -62,9 +78,10 @@ async function update(req, res) {
   }
 }
 
-async function remove(req, res) {
+async function softDelete(req, res) {
   try {
-    const task = await Task.deleteTaskById(req.params.id);
+    const userId = req.user.id;
+    const task = await Task.softDeleteTaskForUser(req.params.id, userId);
     if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
     res.json({ success: true, message: 'Task deleted successfully' });
@@ -74,4 +91,32 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { create, list, get, update, remove };
+async function hardDelete(req, res) {
+  try {
+    const userId = req.user.id;
+    const task = await Task.hardDeleteTaskForUser(req.params.id, userId);
+
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    res.json({ success: true, message: 'Task permanently deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
+async function restore(req, res) {
+  try {
+    const userId = req.user.id;
+    const task = await Task.restoreTaskForUser(req.params.id, userId);
+
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found or not deleted' });
+
+    res.json({ success: true, message: 'Task restored successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
+module.exports = { create, list, listDeleted, get, update, softDelete, hardDelete, restore };

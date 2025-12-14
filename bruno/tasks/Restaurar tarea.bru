@@ -1,11 +1,11 @@
 meta {
-  name: Eliminar tarea
+  name: Restaurar tarea
   type: http
-  seq: 5
+  seq: 8
 }
 
-get {
-  url: {{host}}/tasks
+patch {
+  url: {{host}}/tasks/restore
   body: none
   auth: inherit
 }

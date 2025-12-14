@@ -1,5 +1,4 @@
-// utils/sequelize.js
-const Sequelize = require('sequelize'); // importa el paquete Sequelize
+const Sequelize = require('sequelize'); 
 const { Op } = Sequelize;
 
 module.exports = { Op };

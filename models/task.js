@@ -68,5 +68,28 @@ module.exports = (sequelize, DataTypes) => {
     return task;
   };
 
+  Task.associate = (models) => {
+    Task.belongsToMany(models.User, {
+      through: models.UserTask,
+      foreignKey: 'task_id',
+      as: 'users'
+    });
+  };
+
+  Task.createWithOwner = async function({ title, description, status, userId }) {
+
+    return this.sequelize.transaction(async (t) => {
+      const task = await this.create({ title, description, status }, { transaction: t });
+      const user = await this.sequelize.models.User.findByPk(userId, { transaction: t });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      await task.addUser(user, { through: { role: 'owner' }, transaction: t });
+      return task;
+    });
+  };
+
   return Task;
 };

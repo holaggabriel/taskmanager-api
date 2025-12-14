@@ -2,16 +2,22 @@ const { Task } = require('../models');
 
 async function create(req, res) {
   try {
-    const task = await Task.createTask(req.body);
+    const { title, description, status } = req.body;
+    const userId = req.user.id;
+    console.log(userId)
+
+    const task = await Task.createWithOwner({ title, description, status, userId });
+
     res.status(201).json({
       success: true,
       message: 'Task created successfully',
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(400).json({ success: false, message: err.message });
   }
 }
+
 
 async function list(req, res) {
   try {

@@ -12,7 +12,7 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ success: false, message: 'Invalid or expired token' });
     }
 
-    req.user = payload; // userId disponible en req.user.userId
+    req.user = { id: payload.userId };
     next();
   });
 }

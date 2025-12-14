@@ -34,20 +34,6 @@ async function validateSignup(req, res, next) {
     return res.status(400).json({ success: false, message: 'Password must be at least 8 characters long' });
   }
 
-  // Verificar duplicados (username normalizado)
-  const emailExists = await User.findByEmail(email);
-  if (emailExists) {
-    return res.status(409).json({ success: false, message: 'Email already registered' });
-  }
-
-  const usernameExists = await User.findByUsername(username);
-  if (usernameExists) {
-    return res.status(409).json({ success: false, message: 'Username already taken' });
-  }
-
-  // Reasignar username normalizado al req.body
-  req.body.username = username;
-
   next();
 }
 

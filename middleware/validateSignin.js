@@ -5,7 +5,7 @@ function validateSignin(req, res, next) {
     return res.status(400).json({ success: false, message: 'Identifier and password are required' });
   }
 
-  next(); // Datos presentes, pasar al controlador
+  next();
 }
 
 module.exports = validateSignin;

@@ -54,6 +54,23 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  User.findByIdentifier = async function(identifier) {
+    return this.findOne({
+      where: {
+        [Op.or]: [
+          sequelize.where(
+            sequelize.fn('LOWER', sequelize.col('email')),
+            identifier.toLowerCase()
+          ),
+          sequelize.where(
+            sequelize.fn('LOWER', sequelize.col('username')),
+            identifier.toLowerCase()
+          )
+        ]
+      }
+    });
+  };
+
   // ----------------------------
   // Crear usuario con hash de contraseña
   // ----------------------------

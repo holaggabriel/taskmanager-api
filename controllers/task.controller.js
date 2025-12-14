@@ -1,49 +1,66 @@
-const {
-    createTask,
-    getAllTasks,
-    getTaskById,
-    updateTask,
-    deleteTask
-} = require('../models/task');
+const { Task } = require('../models');
 
 async function create(req, res) {
-    const { title, description, status } = req.body;
-    const task = await createTask(title, description, status);
-    res.status(201).json({ success: true, message: 'Task created successfully' });
+  try {
+    const task = await Task.createTask(req.body);
+    res.status(201).json({
+      success: true,
+      message: 'Task created successfully',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 async function list(req, res) {
-    const tasks = await getAllTasks();
-    res.json({ success: true, message: 'List tasks got successfully', data: tasks });
+  try {
+    const tasks = await Task.getAllTasks();
+    res.json({
+      success: true,
+      message: 'Tasks retrieved successfully',
+      data: tasks
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 async function get(req, res) {
-    const { id } = req.params;
-    const task = await getTaskById(id);
-    if (!task) {
-        return res.status(404).json({ success: false, message: 'Task not found' });
-    }
-    res.json({ success: true, message: 'Task got successfully', data: task });
+  try {
+    const task = await Task.getTaskById(req.params.id);
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    res.json({ success: true, message: 'Task retrieved successfully', data: task });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 async function update(req, res) {
-    const { id } = req.params;
-    const fields = req.body;
+  try {
+    const task = await Task.updateTaskById(req.params.id, req.body);
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
-    const task = await updateTask(id, fields);
-    if (!task) {
-        return res.status(404).json({ success: false, message: 'Task not found' });
-    }
     res.json({ success: true, message: 'Task updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 async function remove(req, res) {
-    const { id } = req.params;
-    const task = await deleteTask(id);
-    if (!task) {
-        return res.status(404).json({ success: false, message: 'Task not found' });
-    }
+  try {
+    const task = await Task.deleteTaskById(req.params.id);
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
     res.json({ success: true, message: 'Task deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 module.exports = { create, list, get, update, remove };

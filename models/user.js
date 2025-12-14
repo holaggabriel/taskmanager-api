@@ -1,40 +1,67 @@
-const pool = require('../config/db');
+const { Op } = require('../utils/sequelize');
+const bcrypt = require('bcrypt');
 
-async function createUser(username, name, email, password) {
-  const query = `
-    INSERT INTO users (username, name, email, password)
-    VALUES ($1, $2, $3, $4)
-    RETURNING id, username, name, email
-  `;
-  const values = [username, name, email, password];
-  const result = await pool.query(query, values);
-  return result.rows[0];
-}
+module.exports = (sequelize, DataTypes) => {
+  const User = sequelize.define(
+    'User',
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+      },
+      username: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true
+      },
+      name: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+      },
+      email: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        unique: true,
+        validate: {
+          isEmail: true
+        }
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false
+      }
+    },
+    {
+      tableName: 'users',
+      underscored: true,
+      timestamps: true
+    }
+  );
 
-async function findUserByEmail(email) {
-  const query = `SELECT * FROM users WHERE email = $1`;
-  const result = await pool.query(query, [email]);
-  return result.rows[0];
-}
+  // ----------------------------
+  // Búsqueda por email o username
+  // ----------------------------
+  User.findByIdentifier = async function(identifier) {
+    return this.findOne({
+      where: { [Op.or]: [{ email: identifier }, { username: identifier }] }
+    });
+  };
 
-async function findUserByUsername(username) {
-  const query = `SELECT * FROM users WHERE username = $1`;
-  const result = await pool.query(query, [username]);
-  return result.rows[0];
-}
+  // ----------------------------
+  // Crear usuario con hash de contraseña
+  // ----------------------------
+  User.createUser = async function({ username, name, email, password }) {
+    const passwordHash = await bcrypt.hash(password, 10);
+    return this.create({ username, name, email, password: passwordHash });
+  };
 
-async function findUserByIdentifier(identifier) {
-  const query = `
-    SELECT * FROM users
-    WHERE email = $1 OR username = $1
-  `;
-  const result = await pool.query(query, [identifier]);
-  return result.rows[0];
-}
+  // ----------------------------
+  // Verificar contraseña
+  // ----------------------------
+  User.prototype.checkPassword = async function(password) {
+    return bcrypt.compare(password, this.password);
+  };
 
-module.exports = {
-  createUser,
-  findUserByEmail,
-  findUserByUsername,
-  findUserByIdentifier,
+  return User;
 };

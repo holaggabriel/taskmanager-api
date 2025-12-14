@@ -1,44 +1,51 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ms = require('ms');
-const { createUser, findUserByIdentifier } = require('../models/user');
+const { User } = require('../models');
 
 async function signup(req, res) {
-  const { username, name, email, password } = req.body;
+  try {
+    const { username, name, email, password } = req.body;
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  await createUser(username, name, email, passwordHash);
+    const existingUser = await User.findByIdentifier(email) || await User.findByIdentifier(username);
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Username or email already exists' });
+    }
 
-  res.status(201).json({ success: true, message: 'Signup successful' });
+    const user = await User.createUser({ username, name, email, password });
+
+    res.status(201).json({
+      success: true,
+      message: 'Signup successful',
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 }
 
 async function signin(req, res) {
-  const { identifier, password } = req.body;
+  try {
+    const { identifier, password } = req.body;
 
-  const user = await findUserByIdentifier(identifier);
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    const user = await User.findByIdentifier(identifier);
+    if (!user || !(await user.checkPassword(password))) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: ms(process.env.JWT_EXPIRES_IN)
+    });
+
+    res.json({ success: true, message: 'Signin successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-
-  const isValid = await bcrypt.compare(password, user.password);
-  if (!isValid) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-
-  const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
-
-  res.cookie('auth_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: ms(process.env.JWT_EXPIRES_IN)
-  });
-
-  res.json({ success: true, message: 'Signin successful' });
 }
 
 function signout(req, res) {

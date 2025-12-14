@@ -1,52 +1,72 @@
-const pool = require('../config/db');
+'use strict';
 
-async function createTask(title, description, status = 'pending') {
-    const query = `
-        INSERT INTO tasks (title, description, status)
-        VALUES ($1, $2, $3)
-        RETURNING *
-    `;
-    const values = [title, description, status];
-    const result = await pool.query(query, values);
-    return result.rows[0];
-}
-
-async function getAllTasks() {
-    const result = await pool.query('SELECT * FROM tasks ORDER BY created_at DESC');
-    return {tasks: result.rows};
-}
-
-async function getTaskById(id) {
-    const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
-    return {task: result.rows[0]};
-}
-
-async function updateTask(id, fields) {
-    const setClause = [];
-    const values = [];
-
-    let i = 1;
-    for (const key in fields) {
-        setClause.push(`${key} = $${i}`);
-        values.push(fields[key]);
-        i++;
+module.exports = (sequelize, DataTypes) => {
+  const Task = sequelize.define(
+    'Task',
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+      },
+      title: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+          len: [3, 255]
+        }
+      },
+      description: {
+        type: DataTypes.TEXT
+      },
+      status: {
+        type: DataTypes.ENUM('pending', 'in_progress', 'completed'),
+        allowNull: false,
+        defaultValue: 'pending'
+      }
+    },
+    {
+      tableName: 'tasks',
+      underscored: true,
+      timestamps: true
     }
-    values.push(id);
+  );
 
-    const query = `UPDATE tasks SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${i} RETURNING *`;
-    const result = await pool.query(query, values);
-    return result.rows[0];
-}
+  // ----------------------------
+  // Métodos estáticos para la lógica de negocio
+  // ----------------------------
 
-async function deleteTask(id) {
-    const result = await pool.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
-    return result.rows[0];
-}
+  // Crear tarea
+  Task.createTask = async function({ title, description, status }) {
+    return this.create({ title, description, status });
+  };
 
-module.exports = {
-    createTask,
-    getAllTasks,
-    getTaskById,
-    updateTask,
-    deleteTask
+  // Obtener todas las tareas
+  Task.getAllTasks = async function() {
+    return this.findAll({ order: [['created_at', 'DESC']] });
+  };
+
+  // Obtener tarea por ID
+  Task.getTaskById = async function(id) {
+    return this.findByPk(id);
+  };
+
+  // Actualizar tarea
+  Task.updateTaskById = async function(id, fields) {
+    const task = await this.findByPk(id);
+    if (!task) return null;
+    await task.update(fields);
+    return task;
+  };
+
+  // Eliminar tarea
+  Task.deleteTaskById = async function(id) {
+    const task = await this.findByPk(id);
+    if (!task) return null;
+    await task.destroy();
+    return task;
+  };
+
+  return Task;
 };

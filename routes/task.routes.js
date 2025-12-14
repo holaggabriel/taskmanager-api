@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateToken = require('../middleware/authToken');
 const validateTask = require('../middleware/validateTask');
 const validateTaskUpdate = require('../middleware/validateTaskUpdate');
-const taskController = require('../controllers/taskController');
+const taskController = require('../controllers/task.controller');
 
 router.use(authenticateToken);
 

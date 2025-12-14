@@ -1,7 +1,7 @@
 # Task Manager API
 
 Task Manager API es una **API RESTful desarrollada en Node.js** para la gestión de tareas.
-Permite crear, listar, actualizar, eliminar (soft delete y hard delete) y restaurar tareas, con **autenticación JWT y control de permisos por usuario**.
+Permite crear, listar, actualizar, eliminar (soft delete y hard delete) y restaurar tareas.
 
 El proyecto incluye una colección lista para usar con **Bruno**, facilitando la prueba de todos los endpoints.
 

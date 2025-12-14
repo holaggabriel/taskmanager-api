@@ -37,10 +37,11 @@ async function list(req, res) {
 
 async function get(req, res) {
   try {
-    const task = await Task.getTaskById(req.params.id);
+    const userId = req.user.id;
+    const task = await Task.getTaskByIdForUser(req.params.id, userId);
     if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
-    res.json({ success: true, message: 'Task retrieved successfully', data: task });
+    res.json({ success: true, message: 'Task retrieved successfully', data: {task: task} });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });

@@ -67,6 +67,22 @@ module.exports = (sequelize, DataTypes) => {
     return this.findByPk(id);
   };
 
+  Task.getTaskByIdForUser = async function(taskId, userId) {
+    const task = await this.findOne({
+      where: { id: taskId },
+      include: [
+        {
+          model: this.sequelize.models.User,
+          as: 'users',
+          where: { id: userId }, // filtra solo si el usuario está asociado
+          attributes: [],       // no devolver datos del usuario
+        }
+      ]
+    });
+
+    return task; // null si el usuario no está asociado o la tarea no existe
+  };
+
   // Actualizar tarea
   Task.updateTaskById = async function(id, fields) {
     const task = await this.findByPk(id);

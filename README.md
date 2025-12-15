@@ -48,15 +48,25 @@ NODE_ENV=development
 
 ## Base de datos
 
-El proyecto utiliza **Sequelize CLI** para la gestión de la base de datos.
+El proyecto utiliza **Sequelize** para la gestión de la base de datos.
 
-Antes de ejecutar el siguiente comando asegurate de tener PostgreSQL ya instalado y configurado.
+Antes de ejecutar el siguiente comando asegúrate de tener PostgreSQL ya instalado y configurado.
 
-**Crear la base de datos**
+**Crear la base de datos automáticamente usando Sequelize:**
 
 ```
 npx sequelize-cli db:create
 ```
+
+**Opcional: Creación manual de la base de datos y tablas**
+
+Si la base de datos o las tablas no se crearon correctamente, o hay problemas relacionados, consulta los comandos de referencia en:
+
+```
+database/database-structure.txt
+```
+
+Estos comandos son solo de **consulta**, y el usuario puede copiarlos y ejecutarlos manualmente en PostgreSQL si lo necesita.
 
 ## Ejecutar el proyecto
 

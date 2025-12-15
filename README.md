@@ -50,16 +50,12 @@ NODE_ENV=development
 
 El proyecto utiliza **Sequelize CLI** para la gestión de la base de datos.
 
+Antes de ejecutar el siguiente comando asegurate de tener PostgreSQL ya instalado y configurado.
+
 **Crear la base de datos**
 
 ```
 npx sequelize-cli db:create
-```
-
-**Ejecutar migraciones**
-
-```
-npx sequelize-cli db:migrate
 ```
 
 ## Ejecutar el proyecto

@@ -64,8 +64,17 @@ npx sequelize-cli db:create
 npm start
 ```
 ## Rutas de la API
-
 > Todas las rutas están protegidas por autenticación, excepto las rutas de autenticación.
+
+### URL Base
+En entorno de desarrollo, la API está disponible en:
+```
+http://localhost:3000
+```
+Todos los endpoints documentados a continuación son relativos a esta URL base. Ejemplo:
+```
+GET http://localhost:3000/tasks
+```
 
 ### Rutas de autenticación
 

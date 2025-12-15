@@ -31,12 +31,6 @@ npm install
 ### Configuración de variables de entorno
 
 Crear un archivo `.env` a partir del ejemplo:
-
-```
-cp .env
-```
-
-**Ejemplo:**
 ```
 PORT=3000
 

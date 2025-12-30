@@ -74,7 +74,7 @@ module.exports = (sequelize, DataTypes) => {
   User.findById = async function(id) {
     return this.findOne({
       where: { id },
-      attributes: ['username', 'name', 'email'],
+      attributes: ['username', 'name', 'email', 'created_at'],
     });
   };
 
